@@ -134,10 +134,11 @@ def generate_content(transcript, topic_list):
     topics = ', '.join([item[1] for item in topic_list])
     full_transcript = ' '.join([item['text'] for item in transcript])
     prompt = "Generate long chapter contents for the following video transcript and chapters:\n\n"
-    prompt += "\n\Provide in the following format \n1. Title 1\n2. Title 2\n3. Title 3\n4. Title 4\n5. Title 5."
-    prompt += "Please provide in PDF ready format with bold chapter titles and formatted contents. Prefix each chapter with word 'Chapter' with chapter number. Generate a detailed textbook style content with atleast 2000 words."
+    prompt += "\nProvide in the following format \n1. Title 1\n2. Title 2\n3. Title 3\n4. Title 4\n5. Title 5."
+    prompt += "Please provide in PDF ready format with bold chapter titles and formatted contents. Prefix each chapter with word 'Chapter' with chapter number. Generate a detailed textbook style content with at least 2000 words."
     prompt += "TRANSCRIPT:" + full_transcript[:4000]
     prompt += "TOPICS:" + topics
+
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
