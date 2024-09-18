@@ -2,8 +2,7 @@ import streamlit as st
 import os
 import time
 import logging
-from videoprocessing import main as process_video, extract_video_id, get_video_info, get_transcript,
-    get_youtube_video_duration
+from videoprocessing import main as process_video, extract_video_id, get_video_info, get_transcript, get_youtube_video_duration
 from dotenv import load_dotenv
 import subprocess
 import sys
