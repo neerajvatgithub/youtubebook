@@ -18,12 +18,20 @@ import streamlit as st
 load_dotenv()
 
 # Function to get OpenAI API key
-def get_openai_api_key():
-    return st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+import os
+import streamlit as st
 
-# Function to get Google API key
+def get_openai_api_key():
+    try:
+        return st.secrets["OPENAI_API_KEY"]
+    except FileNotFoundError:
+        return os.getenv("OPENAI_API_KEY")
+
 def get_google_api_key():
-    return st.secrets["GOOGLE_API_KEY"] if "GOOGLE_API_KEY" in st.secrets else os.getenv("GOOGLE_API_KEY")
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except FileNotFoundError:
+        return os.getenv("GOOGLE_API_KEY")
 
 # Initialize OpenAI client
 client = OpenAI(api_key=get_openai_api_key())
@@ -265,10 +273,14 @@ def convert_html_to_pdf(html_file, pdf_output_file):
         pdf_output_file
     ]
     try:
-        subprocess.run(wkhtmltopdf_command, check=True)
+        result = subprocess.run(wkhtmltopdf_command, check=True, capture_output=True, text=True)
         print(f"HTML successfully converted to PDF: {pdf_output_file}")
+        print(f"wkhtmltopdf output: {result.stdout}")
     except subprocess.CalledProcessError as e:
         print(f"Error occurred during HTML to PDF conversion: {e}")
+        print(f"wkhtmltopdf error output: {e.stderr}")
+    except FileNotFoundError:
+        print("wkhtmltopdf not found. Please make sure it's installed and added to your system PATH.")
 
 def convert_markdown_to_pdf(markdown_content, output_file, output_dict, video_topic):
     html_file = convert_markdown_to_html(markdown_content, output_dict, video_topic)

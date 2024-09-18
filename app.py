@@ -3,28 +3,44 @@ import os
 import time
 import logging
 from videoprocessing import main as process_video, extract_video_id, get_video_info, get_transcript, \
-    get_youtube_video_duration, get_openai_api_key, get_google_api_key
+    get_youtube_video_duration
 from dotenv import load_dotenv
 import subprocess
 import sys
 
+# This should be the first Streamlit command
+st.set_page_config(page_title="Video2TextBook", page_icon="📚", layout="centered")
+
 # Load environment variables
 load_dotenv()
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Function to get API keys
+def get_api_key(key_name):
+    value = os.getenv(key_name)
+    if value is not None:
+        return value
+    try:
+        return st.secrets[key_name]
+    except FileNotFoundError:
+        return None
 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
 
 try:
     import PIL
 except ImportError:
     install('pillow')
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Rest of your code...
 
-st.set_page_config(page_title="Video2TextBook", page_icon="📚", layout="centered")
+# Set up logging
+#logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 
 # Custom CSS
 st.markdown("""
@@ -139,8 +155,8 @@ if generate_button:
     if youtube_url:
         try:
             # Check if API keys are available
-            openai_api_key = get_openai_api_key()
-            google_api_key = get_google_api_key()
+            openai_api_key = get_api_key("OPENAI_API_KEY")
+            google_api_key = get_api_key("GOOGLE_API_KEY")
 
             if not openai_api_key or not google_api_key:
                 st.error("API keys are missing. Please check your configuration.")
