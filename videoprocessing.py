@@ -133,11 +133,25 @@ def generate_content(transcript, topic_list):
     client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     topics = ', '.join([item[1] for item in topic_list])
     full_transcript = ' '.join([item['text'] for item in transcript])
-    prompt = "Generate long chapter contents for the following video transcript and chapters:\n\n"
-    prompt += "\nProvide in the following format \n1. Title 1\n2. Title 2\n3. Title 3\n4. Title 4\n5. Title 5."
-    prompt += "Please provide in PDF ready format with bold chapter titles and formatted contents. Prefix each chapter with word 'Chapter' with chapter number. Generate a detailed textbook style content with at least 2000 words."
-    prompt += "TRANSCRIPT:" + full_transcript[:4000]
-    prompt += "TOPICS:" + topics
+    prompt = (
+    """Generate long chapter contents for the following video transcript and chapters:
+
+    Provide in the following format:
+    1. Title 1
+    2. Title 2
+    3. Title 3
+    4. Title 4
+    5. Title 5.
+
+    Please provide in PDF ready format with bold chapter titles and formatted contents. 
+    Prefix each chapter with the word 'Chapter' followed by the chapter number. 
+    Generate a detailed textbook-style content with at least 2000 words.
+
+    TRANSCRIPT: """ + full_transcript[:4000] + """
+
+    TOPICS: """ + topics
+    )
+
 
     try:
         response = client.chat.completions.create(
