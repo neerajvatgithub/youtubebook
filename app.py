@@ -39,8 +39,19 @@ except ImportError:
 
 # Set up logging
 #logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+#change have to be removed-from here
 
 
+try:
+    result = subprocess.run(['wkhtmltopdf', '--version'], capture_output=True, text=True)
+    if result.returncode == 0:
+        st.success(f"wkhtmltopdf is installed. Version: {result.stdout.strip()}")
+    else:
+        st.error("wkhtmltopdf is installed but returned an error.")
+except FileNotFoundError:
+    st.error("wkhtmltopdf is not installed or not in the system PATH.")
+
+#change have to be removed-till here
 
 # Custom CSS
 st.markdown("""
