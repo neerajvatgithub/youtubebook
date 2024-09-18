@@ -12,14 +12,24 @@ from pytubefix.cli import on_progress
 from openai import OpenAI
 from dotenv import load_dotenv
 import logging
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Function to get OpenAI API key
+def get_openai_api_key():
+    return st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
 
-# Get Google API key from environment variable
-google_api_key = os.getenv('GOOGLE_API_KEY')
+# Function to get Google API key
+def get_google_api_key():
+    return st.secrets["GOOGLE_API_KEY"] if "GOOGLE_API_KEY" in st.secrets else os.getenv("GOOGLE_API_KEY")
+
+# Initialize OpenAI client
+client = OpenAI(api_key=get_openai_api_key())
+
+# Get Google API key
+google_api_key = get_google_api_key()
 
 def extract_video_id(youtube_url):
     query = urlparse(youtube_url)
@@ -36,7 +46,7 @@ def get_video_info(url):
     video_id = extract_video_id(url)
     if not video_id:
         return "Invalid YouTube URL", ""
-    api_url = f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={google_api_key}'
+    api_url = f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={get_google_api_key()}'
     response = requests.get(api_url)
     if response.status_code == 200:
         video_info = response.json()
@@ -58,6 +68,8 @@ def get_transcript(video_id):
         return None
 
 def generate_chapters_with_llm(transcript):
+    global client
+    client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     prompt = "Generate upto 10 concise chapter titles for the following video transcript:\n\n"
     prompt += transcript[:4000]
     prompt += "\n\nProvide upto 10 chapter titles in the following format:\n1. Title 1\n2. Title 2\n3. Title 3\n4. Title 4\n5. Title 5"
@@ -108,6 +120,8 @@ def get_youtube_video_duration(youtube_url):
     return 600
 
 def generate_content(transcript, topic_list):
+    global client
+    client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     topics = ', '.join([item[1] for item in topic_list])
     full_transcript = ' '.join([item['text'] for item in transcript])
     prompt = "Generate long chapter contents for the following video transcript and chapters:\n\n"
@@ -147,6 +161,8 @@ def extract_chapters_and_sections(content):
     return chapters
 
 def generate_markdown_with_chatgpt(chapters, image_dict):
+    global client
+    client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     prompt = """Generate a well-formatted Markdown document for a book about Recurrent Neural Networks. 
     Include a table of contents at the beginning, and ensure each chapter starts with a level 1 header (# Chapter Title).
     Use appropriate headers, lists, and formatting. Add a horizontal rule (---) before each chapter to ensure page breaks.
@@ -330,8 +346,8 @@ def process_video(youtube_url, output_path):
     return "Success", pdf_path
 
 def generate_additional_content(content_type, transcript, topic_list):
-    # This is a placeholder function for generating additional content
-    # You can implement the logic for MCQ, FlashCards, Glossary, and Mindmap here
+    global client
+    client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     prompt = f"Generate {content_type} based on the following transcript and topics:\n\n"
     prompt += "Transcript: " + " ".join([item['text'] for item in transcript])[:4000]
     prompt += "\n\nTopics: " + ", ".join([item[1] for item in topic_list])
@@ -348,33 +364,10 @@ def generate_additional_content(content_type, transcript, topic_list):
     except Exception as e:
         print(f"An error occurred while generating {content_type}: {e}")
         return f"Failed to generate {content_type}"
-def generate_mcq_content(transcript, topic_list):
-    prompt = "Generate 10 multiple-choice questions based on the following transcript and topics. Each question should have 4 options (A, B, C, D) with only one correct answer. Provide the correct answer at the end of all questions."
-    prompt += "\n\nTranscript: " + " ".join([item['text'] for item in transcript])[:4000]
-    prompt += "\n\nTopics: " + ", ".join([item[1] for item in topic_list])
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates multiple-choice questions for educational content."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"An error occurred while generating MCQs: {e}")
-        return None
-def convert_mcq_to_markdown(mcq_content):
-    markdown_content = "# Multiple Choice Questions\n\n"
-    questions = mcq_content.split('\n\n')
-    for i, question in enumerate(questions[:-1], 1):
-        markdown_content += f"## Question {i}\n\n{question}\n\n"
-    markdown_content += "# Answers\n\n" + questions[-1]
-    return markdown_content
-
 
 def generate_mcq_content(transcript, topic_list):
+    global client
+    client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     prompt = "Generate 10 multiple-choice questions based on the following transcript and topics. Each question should have 4 options (A, B, C, D) with only one correct answer. Provide the correct answer at the end of all questions."
     prompt += "\n\nTranscript: " + " ".join([item['text'] for item in transcript])[:4000]
     prompt += "\n\nTopics: " + ", ".join([item[1] for item in topic_list])

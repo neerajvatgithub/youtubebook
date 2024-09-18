@@ -3,24 +3,28 @@ import os
 import time
 import logging
 from videoprocessing import main as process_video, extract_video_id, get_video_info, get_transcript, \
-    get_youtube_video_duration
+    get_youtube_video_duration, get_openai_api_key, get_google_api_key
 from dotenv import load_dotenv
-load_dotenv()
 import subprocess
 import sys
 
+# Load environment variables
+load_dotenv()
+
+
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
 
 try:
     import PIL
 except ImportError:
     install('pillow')
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 st.set_page_config(page_title="Video2TextBook", page_icon="📚", layout="centered")
-
 
 # Custom CSS
 st.markdown("""
@@ -79,6 +83,7 @@ if 'glossary' not in st.session_state:
 if 'mindmap' not in st.session_state:
     st.session_state.mindmap = False
 
+
 # Function to create download buttons
 def create_download_button(file_path, label, file_name):
     with open(file_path, "rb") as file:
@@ -88,6 +93,7 @@ def create_download_button(file_path, label, file_name):
             file_name=file_name,
             mime="application/pdf"
         )
+
 
 # UI Components
 youtube_url = st.text_input("Enter YouTube URL", value=st.session_state.youtube_url, key="youtube_url")
@@ -101,6 +107,7 @@ with col2:
     glossary = st.checkbox("Glossary 📚", value=st.session_state.glossary, key="glossary")
     mindmap = st.checkbox("Mindmap 🧠", value=st.session_state.mindmap, key="mindmap")
 
+
 def reset_inputs():
     st.session_state.youtube_url = ''
     st.session_state.mcq = False
@@ -112,12 +119,13 @@ def reset_inputs():
     if 'mcq_pdf_path' in st.session_state:
         del st.session_state.mcq_pdf_path
 
+
 # Add some vertical spacing
 st.write("")
 st.write("")
 
 # Use columns for button layout
-col1, col2, col3 = st.columns([1,1,1])
+col1, col2, col3 = st.columns([1, 1, 1])
 with col1:
     generate_button = st.button("Generate Textbook 🚀", key="generate_button")
 with col3:
@@ -130,6 +138,14 @@ st.write("")
 if generate_button:
     if youtube_url:
         try:
+            # Check if API keys are available
+            openai_api_key = get_openai_api_key()
+            google_api_key = get_google_api_key()
+
+            if not openai_api_key or not google_api_key:
+                st.error("API keys are missing. Please check your configuration.")
+                st.stop()
+
             progress_bar = st.progress(0)
             status_text = st.empty()
 
