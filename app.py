@@ -6,7 +6,16 @@ from videoprocessing import main as process_video, extract_video_id, get_video_i
     get_youtube_video_duration
 from dotenv import load_dotenv
 load_dotenv()
+import subprocess
+import sys
 
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+try:
+    import PIL
+except ImportError:
+    install('pillow')
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
