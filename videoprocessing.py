@@ -129,6 +129,7 @@ def get_youtube_video_duration(youtube_url):
 
 def generate_content(transcript, topic_list):
     global client
+    print("issue is here")
     client = OpenAI(api_key=get_openai_api_key())  # Reinitialize client
     topics = ', '.join([item[1] for item in topic_list])
     full_transcript = ' '.join([item['text'] for item in transcript])
