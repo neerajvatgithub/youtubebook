@@ -447,6 +447,7 @@ def main(youtube_url, output_path, additional_content=None):
 
     video_topic, video_description = get_video_info(youtube_url)
     transcript = get_transcript(video_id)
+    print(video_id)
     if not transcript:
         return "Failed to fetch transcript", None, {}
 
